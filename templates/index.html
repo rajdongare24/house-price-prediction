@@ -10,11 +10,11 @@
 
     <title>House Price Predictor</title>
   </head>
-  <body class="bg-dark">
-    <div class="row">
-        <div class="card" style="width: 100%; height: 100%; margin-top: 50px">
+  <body class="bg-light">
+    <div class="container mt-5">
+        <div class="card shadow-1g p-4 rounded">
             <div class="card-header" style="text-align: center">
-                <h1>Welcome to House Price Predictor</h1>
+                <h1>🏠 House Price Predictor</h1>
             </div>
             <div class="card-body">
                 <form method="post" accept-charset="UTF-8">
@@ -22,7 +22,7 @@
                     <div class="row">
 
                         <div class="col-md-6 form-group" style="text-align: center">
-                            <lable><b>Select the location:</b></lable>
+                            <label><b>Select the location:</b></label>
                             <select class="selectpicker form-control" id="location" name="location" required="1">
                                 {% for location in locations %}
                                     <option value="{{ location}}" >{{ location }}</option>
@@ -30,29 +30,34 @@
                             </select>
                         </div>
                         <div class="col-md-6 form-group" style="text-align: center">
-                            <lable><b>Enter the BHK:</b></lable>
-                            <input type="text" class="form-control" id="bhk" name="bhk" placeholder="Enter BHK">
+                            <label><b>Enter the BHK:</b></label>
+                            <input type="number" class="form-control" id="bhk" name="bhk" placeholder="Enter BHK" required="1" min="1">
                         </div>
                         <div class="col-md-6 form-group" style="text-align: center">
-                            <lable><b>Enter Number of Bathrooms:</b></lable>
-                            <input type="text" class="form-control" id="bath" name="bath" placeholder="Enter Number of Bathrooms">
+                            <label><b>Enter Number of Bathrooms:</b></label>
+                            <input type="number" class="form-control" id="bath" name="bath" placeholder="Enter Number of Bathrooms" required="1" min="1">
                         </div>
                         <div class="col-md-6 form-group" style="text-align: center">
-                            <lable><b>Enter Square Feet:</b></lable>
-                            <input type="text" class="form-control" id="total_sqft" name="total_sqft" placeholder="Enter Square Feet">
+                            <label><b>Enter Square Feet:</b></label>
+                            <input type="number" class="form-control" id="total_sqft" name="total_sqft" placeholder="Enter Square Feet" required="1" min="100">
                         </div>
 
                         <div class="col-md-12 form-group">
-                            <button class="btn btn-primary form-control" onclick="send_data()">Predict Price</button>
+                            <button type="button" class="btn btn-primary form-control" onclick="send_data()">Predict Price</button>
+                        </div>
+
+                        <div class="col-md-12 form-group">
+                            <button type="button" class="btn btn-secondary form-control" onclick="reset_form()">
+                                Reset
+                            </button>
                         </div>
 
                     </div>
 
                 </form>
-                <br>
 
-                <div class="col-md-12" style="text-align: center">
-                    <h3><span id="prediction"></span></h3>
+                <div id="prediction-box" class="alert alert-success mt-3 text-center" style="display: none;">
+                    <h3 id="prediction"></h3>
                 </div>
             </div>
         </div>
@@ -63,18 +68,40 @@
             event.preventDefault();
         }
         function send_data(){
+            var form = document.querySelector('form');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            var bhk = document.getElementById("bhk").value;
+            var bath = document.getElementById("bath").value;
+            var sqft = document.getElementById("total_sqft").value;
+            if (bhk<=0 || bath<=0|| sqft<=0){
+                alert("Please enter valid positive values.");
+                return;
+            }
+            if(sqft < bhk*150){
+                alert("Square feet area seems too small for the selected BHK.");
+                return;
+            }
             document.querySelector('form').addEventListener("submit",form_handler);
             var fd = new FormData(document.querySelector('form'));
             var xhr=new XMLHttpRequest()
             xhr.open('POST', '/predict', true);
+            document.getElementById("prediction-box").style.display="block";
             document.getElementById("prediction").innerHTML="Wait Predicting Price...";
             xhr.onreadystatechange = function(){
                 if(xhr.readyState==XMLHttpRequest.DONE){
-                    document.getElementById('prediction').innerHTML="Prediction: $ "+xhr.responseText;
+                    document.getElementById('prediction').innerHTML="Prediction: ₹ "+xhr.responseText+" Lakhs";
                 }
             };
             xhr.onload = function(){}
             xhr.send(fd);
+        }
+        function reset_form(){
+            document.querySelector('form').reset();
+            document.getElementById("prediction").innerHTML="";
+            document.getElementById("prediction-box").style.display="none";
         }
     </script>
 

@@ -17,10 +17,11 @@ def predict():
     location=request.form.get('location')
     bhk=float(request.form.get('bhk'))
     bath=float(request.form.get('bath'))
-    sqft=request.form.get('total_sqft')
-    print(location, bhk, sqft)
+    sqft=float(request.form.get('total_sqft'))
+    if bhk <= 0 or bath <= 0 or sqft <= 100:
+        return "Invalid input"
     input=pd.DataFrame([[location,sqft,bath,bhk]],columns=['location','total_sqft', 'bath','bhk'])
-    prediction=pipe.predict(input)[0]*1e5
+    prediction=pipe.predict(input)[0]
 
     return str(np.round(prediction,2))
 
